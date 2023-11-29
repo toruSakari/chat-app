@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: server
+    depends_on:
+      - mysql
+    tty: true
+    ports:
+      - 8080:8080
+    volumes:
+      - ./server/app:/server/app
+    command: bun run dev
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: client
+    tty: true
+    ports:
+      - 3000:3000
+      - 6006:6006
+    volumes:
+      - ./client/app:/client/app
+    depends_on:
+      - server
+    command: bun run dev-all
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    tty: true
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: myapp
+      TZ: "Asia/Tokyo"
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./database/config:/etc/mysql/conf.d
+      - mysql-volume:/var/lib/mysql
+  # schemaspy:
+  #   image: schemaspy/schemaspy
+  #   build:
+  #     context: ./schemaspy
+  #     dockerfile: Dockerfile
+  #   container_name: schemaspy
+  #   tty: true
+  #   depends_on:
+  #     - mysql
+  #   volumes:
+  #     - ./schemaspy/config:/config
+  #     - ./schemaspy/output:/output
+  #     - ./schemaspy/meta:/meta
+  #   command: "java -jar schemaspy.jar -configFile /config/schemaspy.properties"
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   tty: true
+  #   depends_on:
+  #     - schemaspy
+  #   ports:
+  #     - 8888:80
+  #   volumes:
+  #     - ./schemaspy/output:/user/share/nginx/html:ro
+volumes:
+  mysql-volume:

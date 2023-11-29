@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"],
+      "@client": ["./prisma/generated/prisma-client-js"]
+    }
+  }
+}
